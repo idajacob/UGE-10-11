@@ -1,0 +1,7 @@
+torch
+torchvision
+matplotlib
+numpy
+json
+os
+network

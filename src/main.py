@@ -3,6 +3,8 @@ import json
 import torch
 import os
 import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import axes
 from torch import nn
 from torchvision import datasets, transforms
 from network import neural_network
@@ -58,11 +60,16 @@ test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_siz
 # opret model - flyt modellen til enten GPU eller CPU alt efter tilgængelighed
 model = neural_network().to(device)
 
-optimizer = torch.optim.SGD(params = model.parameters(), lr = learning_rate)
+optimizer = torch.optim.Adam(params = model.parameters(), lr = learning_rate)
 loss_fn = torch.nn.CrossEntropyLoss()
 
 
 ########## TEST OG TRAIN LOOPS ##########
+
+model_file = "outputs/model_weights.pt"
+if os.path.exists(model_file):
+    model.load_state_dict(torch.load(model_file))
+    model.eval()
 
 # Train funktion
 def train(dataloader, model, loss_fn, optimizer, device):
@@ -105,8 +112,10 @@ def test(dataloader, model, loss_fn, device):
     accuracy = correct / len(dataloader.dataset)
     return avg_loss, accuracy
 
+torch.save(model.state_dict(), "outputs/model_weights.pt")
 
-########## LISTER OG GRAFER ##########
+
+########## LISTER, GRAFER OG BILLEDER ##########
 
 # lister til resultater
 train_losses = []
@@ -121,7 +130,7 @@ for epoch in range(epochs):
     test_losses.append(test_loss)
     test_accuracies.append(test_accuracy)
 
-    # print i terminal
+    # print i terminal så jeg ved hvad der sker
     print(f"Epoch {epoch+1}/{epochs} | Train Loss: {train_loss:.4f} | Test Loss: {test_loss:.4f} | Test Accuracy: {test_accuracy:.4f}")
     
     # gem i en fil
@@ -149,3 +158,25 @@ plt.legend()
 plt.tight_layout()
 plt.savefig("outputs/training_plot.png")
 plt.show()
+
+
+# tegn images
+def show_more_image(dataset, num_image=24):
+    cols = rows = int(num_image ** 0.5)
+    
+    axes: np.ndarray
+    
+    figur,axes = plt.subplots(rows,cols)
+    
+    for ax, (image, label_number) in zip(axes.flat, dataset):
+        image:torch.Tensor
+        
+        ax.imshow(image.squeeze(),cmap="grey")
+        ax.set_title(f"Label: {label_number}")
+        ax.axis("off")
+    
+    plt.tight_layout()
+    plt.savefig("outputs/test_images.png")
+    plt.show()
+
+show_more_image(test_dataset)
