@@ -70,7 +70,10 @@ model_file = "outputs/model_weights.pt"
 if os.path.exists(model_file):
     model.load_state_dict(torch.load(model_file))
     model.eval()
-
+    print("eksisterende")
+else:
+    print("ny model")
+    
 # Train funktion
 def train(dataloader, model, loss_fn, optimizer, device):
     model.train()  # Sæt model til træningstilstand
